@@ -1,13 +1,5 @@
-//Sample using LiquidCrystal library
 #include <LiquidCrystal.h>
- 
-/*******************************************************
- 
-This program will test the LCD panel and the buttons
-Mark Bramwell, July 2010
- 
-********************************************************/
- 
+
 // select the pins used on the LCD panel
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
  
@@ -38,52 +30,46 @@ int read_LCD_buttons()
  
 void setup()
 {
- lcd.begin(16, 2);              // start the library
- lcd.setCursor(0,0);
- lcd.print("Push the buttons"); // print a simple message
+  Serial.begin(9600);
+  lcd.begin(16, 2);              // start the library
+  lcd.setCursor(0,0);
 }
+ 
+int lcdIndex = 0;
+int lcdLine = 0;
   
 void loop()
 {
- lcd.setCursor(9,1);            // move cursor to second line "1" and 9 spaces over
- lcd.print(millis()/1000);      // display seconds elapsed since power-up
- 
- 
- lcd.setCursor(0,1);            // move to the begining of the second line
  lcd_key = read_LCD_buttons();  // read the buttons
  
- switch (lcd_key)               // depending on which button was pushed, we perform an action
+ while( Serial.available() > 0 )
  {
-   case btnRIGHT:
+   char value = Serial.read();
+   
+   if ( value != -1 )
+   {
+     lcd.print(value);
+     lcdIndex++;
+     if( (lcdIndex > 16) && (lcdLine == 0) )
      {
-     lcd.print("RIGHT ");
-     break;
+       lcdIndex = 0;
+       lcdLine++;
+       moveCursor();
      }
-   case btnLEFT:
+     else if ( (lcdIndex > 16) && (lcdLine == 1))
      {
-     lcd.print("LEFT   ");
-     break;
+       lcdIndex = 0;
+       lcdLine = 0; 
+       moveCursor();
      }
-   case btnUP:
-     {
-     lcd.print("UP    ");
-     break;
-     }
-   case btnDOWN:
-     {
-     lcd.print("DOWN  ");
-     break;
-     }
-   case btnSELECT:
-     {
-     lcd.print("SELECT");
-     break;
-     }
-     case btnNONE:
-     {
-     lcd.print("NONE  ");
-     break;
-     }
+   }
  }
- 
+}
+
+void moveCursor()
+{
+  if( lcdLine == 0)
+     lcd.setCursor(1, 0); 
+  else
+     lcd.setCursor(0,0);
 }
